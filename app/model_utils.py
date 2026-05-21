@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-MODEL_PATH = BASE_DIR / "models" / "xgboost_pipeline.joblib"
+MODEL_PATH = BASE_DIR / "models" / "xgb_response_time_pipeline.pkl"
 
 model = joblib.load(MODEL_PATH)
 
