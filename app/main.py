@@ -7,7 +7,10 @@ from app.schemas import (
     ActualResponseResponse,
 )
 
-from app.model_utils import predict_response_time
+from app.model_utils import (
+    predict_response_time,
+    validate_known_categories,
+)
 
 from app.database import (
     initialize_database,
@@ -19,28 +22,16 @@ from app.database import (
 import pandas as pd
 
 
-# =========================
-# FastAPI app
-# =========================
-
 app = FastAPI(
     title="Fire Department Response Time API",
     version="1.0.0",
 )
 
 
-# =========================
-# Startup event
-# =========================
-
 @app.on_event("startup")
 def startup_event():
     initialize_database()
 
-
-# =========================
-# Root endpoint
-# =========================
 
 @app.get("/")
 def root():
@@ -49,25 +40,18 @@ def root():
     }
 
 
-# =========================
-# Predict response endpoint
-# =========================
-
 @app.post(
     "/predict_response",
     response_model=PredictionResponse,
 )
-def predict_response(
-    request: PredictionRequest,
-):
+def predict_response(request: PredictionRequest):
 
     try:
-
         request_data = request.model_dump()
 
-        predicted_response_time = predict_response_time(
-            request_data
-        )
+        validate_known_categories(request_data)
+
+        predicted_response_time = predict_response_time(request_data)
 
         insert_prediction(
             unit_id=request.unit_id,
@@ -85,34 +69,25 @@ def predict_response(
         )
 
     except Exception as error:
-
         raise HTTPException(
             status_code=422,
             detail=str(error),
         )
 
 
-# =========================
-# Actual response endpoint
-# =========================
-
 @app.post(
     "/actual_response",
     response_model=ActualResponseResponse,
 )
-def actual_response(
-    request: ActualResponseRequest,
-):
+def actual_response(request: ActualResponseRequest):
 
     try:
-
         stored_prediction = get_prediction(
             unit_id=request.unit_id,
             received_dttm=request.received_dttm,
         )
 
         if stored_prediction is None:
-
             raise HTTPException(
                 status_code=422,
                 detail="Prediction record not found.",
@@ -132,7 +107,6 @@ def actual_response(
         ).total_seconds()
 
         if actual_response_time_seconds < 0:
-
             raise HTTPException(
                 status_code=422,
                 detail="Negative response time detected.",
@@ -163,7 +137,6 @@ def actual_response(
         raise
 
     except Exception as error:
-
         raise HTTPException(
             status_code=422,
             detail=str(error),
