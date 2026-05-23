@@ -1,7 +1,8 @@
-import joblib
-import pandas as pd
 from pathlib import Path
+
+import joblib
 import numpy as np
+import pandas as pd
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,8 +11,35 @@ MODEL_PATH = BASE_DIR / "models" / "xgb_response_time_pipeline.pkl"
 model = joblib.load(MODEL_PATH)
 
 
+DEFAULT_FEATURE_VALUES = {
+    "call_type": "Unknown",
+    "call_type_group": "Unknown",
+    "original_priority": "Unknown",
+    "unit_type": "Unknown",
+    "station_area": "Unknown",
+    "battalion": "Unknown",
+    "neighborhoods_analysis_boundaries": "Unknown",
+    "neighborhood_district": "Unknown",
+    "zipcode_of_incident": "Unknown",
+}
+
+
+def add_default_feature_values(request_data: dict) -> dict:
+    prepared_data = request_data.copy()
+
+    for column, default_value in DEFAULT_FEATURE_VALUES.items():
+        value = prepared_data.get(column)
+
+        if value is None or value == "":
+            prepared_data[column] = default_value
+
+    return prepared_data
+
+
 def predict_response_time(request_data: dict) -> float:
-    input_df = pd.DataFrame([request_data])
+    prepared_data = add_default_feature_values(request_data)
+
+    input_df = pd.DataFrame([prepared_data])
 
     received_dt = pd.to_datetime(input_df["received_dttm"])
 

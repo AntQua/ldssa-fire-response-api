@@ -6,17 +6,18 @@ from pydantic import BaseModel, ConfigDict
 class PredictionRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    call_type: str
-    call_type_group: str
-    original_priority: str
     unit_id: str
-    unit_type: str
-    station_area: str
-    battalion: str
-    neighborhoods_analysis_boundaries: str
-    neighborhood_district: Optional[str] = None
-    zipcode_of_incident: str
     received_dttm: str
+
+    call_type: Optional[str] = "Unknown"
+    call_type_group: Optional[str] = "Unknown"
+    original_priority: Optional[str] = "Unknown"
+    unit_type: Optional[str] = "Unknown"
+    station_area: Optional[str] = "Unknown"
+    battalion: Optional[str] = "Unknown"
+    neighborhoods_analysis_boundaries: Optional[str] = "Unknown"
+    neighborhood_district: Optional[str] = "Unknown"
+    zipcode_of_incident: Optional[str] = "Unknown"
 
 
 class PredictionResponse(BaseModel):
