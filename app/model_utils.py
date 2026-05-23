@@ -1,6 +1,7 @@
 import joblib
 import pandas as pd
 from pathlib import Path
+import numpy as np
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -87,5 +88,26 @@ def validate_known_categories(request_data: dict) -> None:
 
 def predict_response_time(request_data: dict) -> float:
     input_df = pd.DataFrame([request_data])
+
+    received_dt = pd.to_datetime(input_df["received_dttm"])
+
+    input_df["hour"] = received_dt.dt.hour
+    input_df["month"] = received_dt.dt.month
+    input_df["day_of_week"] = received_dt.dt.dayofweek
+
+    input_df["is_weekend"] = input_df["day_of_week"].isin([5, 6]).astype(int)
+    input_df["is_night"] = input_df["hour"].between(0, 5).astype(int)
+
+    input_df["is_rush_hour"] = input_df["hour"].isin(
+        [7, 8, 9, 16, 17, 18]
+    ).astype(int)
+
+    input_df["hour_sin"] = np.sin(2 * np.pi * input_df["hour"] / 24)
+    input_df["hour_cos"] = np.cos(2 * np.pi * input_df["hour"] / 24)
+
+    input_df["dow_sin"] = np.sin(2 * np.pi * input_df["day_of_week"] / 7)
+    input_df["dow_cos"] = np.cos(2 * np.pi * input_df["day_of_week"] / 7)
+
     prediction = model.predict(input_df)[0]
+
     return float(prediction)
