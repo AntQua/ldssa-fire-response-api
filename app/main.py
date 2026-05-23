@@ -44,6 +44,11 @@ def root():
     "/predict_response",
     response_model=PredictionResponse,
 )
+@app.post(
+    "/predict_response/",
+    response_model=PredictionResponse,
+    include_in_schema=False,
+)
 def predict_response(request: PredictionRequest):
 
     try:
@@ -78,6 +83,11 @@ def predict_response(request: PredictionRequest):
 @app.post(
     "/actual_response",
     response_model=ActualResponseResponse,
+)
+@app.post(
+    "/actual_response/",
+    response_model=ActualResponseResponse,
+    include_in_schema=False,
 )
 def actual_response(request: ActualResponseRequest):
 
