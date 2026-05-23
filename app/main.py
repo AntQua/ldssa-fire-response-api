@@ -1,3 +1,6 @@
+from contextlib import asynccontextmanager
+
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 
 from app.schemas import (
@@ -7,10 +10,7 @@ from app.schemas import (
     ActualResponseResponse,
 )
 
-from app.model_utils import (
-    predict_response_time,
-    validate_known_categories,
-)
+from app.model_utils import predict_response_time
 
 from app.database import (
     initialize_database,
@@ -19,18 +19,18 @@ from app.database import (
     update_actual_response,
 )
 
-import pandas as pd
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_database()
+    yield
 
 
 app = FastAPI(
     title="Fire Department Response Time API",
     version="1.0.0",
+    lifespan=lifespan,
 )
-
-
-@app.on_event("startup")
-def startup_event():
-    initialize_database()
 
 
 @app.get("/")
@@ -53,8 +53,6 @@ def predict_response(request: PredictionRequest):
 
     try:
         request_data = request.model_dump()
-
-        validate_known_categories(request_data)
 
         predicted_response_time = predict_response_time(request_data)
 

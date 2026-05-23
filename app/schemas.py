@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from typing import Optional
 
+from pydantic import BaseModel, ConfigDict
 
-# =========================
-# predict_response/ request
-# =========================
 
 class PredictionRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     call_type: str
     call_type_group: str
     original_priority: str
@@ -14,13 +14,10 @@ class PredictionRequest(BaseModel):
     station_area: str
     battalion: str
     neighborhoods_analysis_boundaries: str
+    neighborhood_district: Optional[str] = None
     zipcode_of_incident: str
     received_dttm: str
 
-
-# =========================
-# predict_response/ response
-# =========================
 
 class PredictionResponse(BaseModel):
     unit_id: str
@@ -28,19 +25,13 @@ class PredictionResponse(BaseModel):
     predicted_response_time_seconds: float
 
 
-# =========================
-# actual_response/ request
-# =========================
-
 class ActualResponseRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     unit_id: str
     received_dttm: str
     on_scene_dttm: str
 
-
-# =========================
-# actual_response/ response
-# =========================
 
 class ActualResponseResponse(BaseModel):
     unit_id: str
